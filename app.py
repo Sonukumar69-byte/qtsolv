@@ -14,15 +14,6 @@ from dateutil import parser
 import smtplib
 from email.message import EmailMessage
 
-app = Flask(__name__)
-app.secret_key = "super_secret_key"
-
-# ---- Email config (fill with real values) ----
-SMTP_SERVER = "smtp.gmail.com"     # ya jo bhi server use karte ho
-SMTP_PORT = 587                     # Gmail = 587 (TLS)
-SENDER_EMAIL = "sonukumar6396727@gmail.com"
-SENDER_PASSWORD = "ihbihglefnfwpvlg"   # app password / SMTP password
-MANAGER_EMAIL = "sonu.kumar@qtsolv.com"
 
 DB_NAME = "gmc_data.db"
 
@@ -1003,3 +994,4 @@ def helpdesk_send_email():
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
