@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>GMC Search | Quarks Technosoft</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #020617;
+            --accent: #22c55e;
+            --accent-soft: rgba(34, 197, 94, 0.15);
+            --border: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --danger: #f97373;
+        }
+        /* ---------- DOB column: force single-line neat format ---------- */
+        table thead th:nth-child(4),
+        table tbody td:nth-child(4) {
+            white-space: nowrap;      /* prevent line break */
+            text-align: center;       /* center align DOB */
+            vertical-align: middle;   /* middle alignment */
+            width: 110px;             /* fix column width */
+            max-width: 110px;
+        }
+
+
+
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #1f2937, #020617 55%, #000000 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px 40px;
+            flex: 1;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0.02em;
+        }
+
+        .title-block p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--accent-soft);
+            background: rgba(15, 23, 42, 0.7);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .layout-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+            padding: 20px 18px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .badge-accent {
+            border-color: var(--accent-soft);
+            color: var(--accent);
+            background: rgba(22, 163, 74, 0.08);
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .form-group { flex: 1; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent-soft);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        input::placeholder { color: #6b7280; }
+
+        .hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        button[type="submit"] {
+            padding: 11px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            background: linear-gradient(135deg, #10ad4a, #16a34a);
+            color: #022c22;
+            box-shadow: 0 12px 30px rgba(34, 197, 94, 0.45);
+            white-space: nowrap;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 40px rgba(34, 197, 94, 0.55);
+            filter: brightness(1.05);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.45);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .metric {
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.95));
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .metric-chip {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--accent-soft);
+            color: var(--accent);
+            background: rgba(22, 163, 74, 0.12);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .metric-chip span {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .table-wrapper {
+            margin-top: 6px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead { background: rgba(15, 23, 42, 0.96); }
+
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+        }
+
+        th {
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        tbody tr:hover {
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+        }
+
+        .pill-relation {
+            background: rgba(56, 189, 248, 0.12);
+            color: #7dd3fc;
+        }
+
+        .pill-self {
+            background: rgba(34, 197, 94, 0.16);
+            color: #bbf7d0;
+        }
+
+        .pill-gender {
+            background: rgba(129, 140, 248, 0.12);
+            color: #c7d2fe;
+        }
+
+        .pill-age-band {
+            display: inline-block;
+            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1;
+            min-width: 48px;
+            text-align: center;
+            vertical-align: middle;
+            background: rgba(251, 191, 36, 0.12);
+            color: #facc15;
+        }
+
+
+        .pill-sum {
+            background: rgba(52, 211, 153, 0.1);
+            color: #6ee7b7;
+        }
+
+        .pill-premium {
+            background: rgba(248, 113, 113, 0.12);
+            color: #fecaca;
+        }
+
+        .empty-state {
+            font-size: 13px;
+            color: var(--muted);
+            padding: 10px 4px 2px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            margin-top: 8px;
+        }
+
+        .back-link span {
+            font-size: 16px;
+            line-height: 0;
+        }
+
+        .back-link:hover { color: var(--accent); }
+
+        .tagline {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="title-block">
+            <h1>GMC Coverage Search</h1>
+            <p>Quickly check employee & dependant GMC coverage, monthly and annual premium.</p>
+            <div class="tagline">Tip: Type a few characters, then pick from autosuggest list.</div>
+        </div>
+        <div>
+            <div class="chip">
+                <div class="chip-dot"></div>
+                GMC 2025 · Live from master sheet
+            </div>
+            <div>
+                <a href="{{ url_for('home') }}" class="back-link">
+                    <span>←</span> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout-grid">
+        <!-- LEFT: Search box -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Search member</h2>
+                <span class="badge badge-accent">Employee wise · Real-time lookup</span>
+            </div>
+
+            <form action="{{ url_for('search_gmc') }}" method="post" class="search-form" autocomplete="off">
+                <div class="input-row">
+                    <div class="form-group">
+                        <div class="field-label">Employee Code</div>
+                        <input
+                            type="text"
+                            name="employee_code"
+                            list="empCodes"
+                            placeholder="e.g. Q1001"
+                            value="{{ search_emp  }}">
+                        <!-- Employee code suggestions -->
+                        <datalist id="empCodes">
+                            {% for s in suggestions %}
+                                <option value="{{ s.employee_code }}">
+                                    {{ s.employee_code }} - {{ s.employee_name }}
+                                </option>
+                            {% endfor %}
+                        </datalist>
+                        <div class="hint">Typing here will ignore name field.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="field-label">Name (partial allowed)</div>
+                        <input
+                            type="text"
+                            name="name"
+                            list="empNames"
+                            placeholder="e.g. Shanti, Sushil, Jyoti..."
+                            value="{{ search_name }}">
+                        <!-- Employee SELF name suggestions -->
+                        <datalist id="empNames">
+                            {% for s in suggestions %}
+                                {% if s.employee_name %}
+                                    <option value="{{ s.employee_name }}">
+                                        {{ s.employee_code }} - {{ s.employee_name }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </datalist>
+                        <div class="hint">Leave code empty if searching by name.</div>
+                    </div>
+
+                    <div>
+                        <button type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: Summary + table -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Coverage summary</h2>
+                {% if summary %}
+                    <span class="badge">Showing live data</span>
+                {% else %}
+                    <span class="badge">Run a search to see coverage</span>
+                {% endif %}
+            </div>
+
+            {% if summary %}
+                <div class="summary-grid">
+                    <div class="metric">
+                        <div class="metric-label">Employee</div>
+                        <div class="metric-value">{{ summary.employee_name }}</div>
+                        <div class="metric-chip">
+                            <span>CODE</span> {{ summary.employee_code }}
+                        </div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-label">Total members (self + dependants)</div>
+                        <div class="metric-value">{{ summary.dependents }}</div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-label">Total monthly premium</div>
+                        <div class="metric-value">
+                            ₹ {{ "%.2f"|format(summary.monthly_premium) }}
+                        </div>
+                    </div>
+
+                    <div class="metric">
+                        <div class="metric-label">Total annual premium</div>
+                        <div class="metric-value">
+                            ₹ {{ "%.2f"|format(summary.annual_premium) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member Name</th>
+                                <th>Relation</th>
+                                <th>Gender</th>
+                                <th>DOB</th>
+                                <th>Age</th>
+                                <th>Age Band</th>
+                                <th>Sum Insured</th>
+                                <th>Total Premium</th>
+                                <th>Monthly</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td>
+                                    {% if row.relation|lower == "self" %}
+                                        <span class="pill pill-self">Self</span>
+                                    {% else %}
+                                        <span class="pill pill-relation">{{ row.relation }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="pill pill-gender">{{ row.gender }}</span>
+                                </td>
+                                <td>{{ row.dob }}</td>
+                                <td>{{ row.age }}</td>
+                                <td>
+                                    {% if row.age_range %}
+                                        <span class="pill pill-age-band">{{ row.age_range }}</span>
+                                    {% elif row.age is not none and row.age != "" %}
+                                        {% set a = row.age|int %}
+                                        {% if a < 18 %}
+                                            <span class="pill pill-age-band">&lt;18</span>
+                                        {% elif a <= 25 %}
+                                            <span class="pill pill-age-band">18-25</span>
+                                        {% elif a <= 35 %}
+                                            <span class="pill pill-age-band">26-35</span>
+                                        {% elif a <= 45 %}
+                                            <span class="pill pill-age-band">36-45</span>
+                                        {% elif a <= 60 %}
+                                            <span class="pill pill-age-band">46-60</span>
+                                        {% else %}
+                                            <span class="pill pill-age-band">61+</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="pill pill-age-band">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="pill pill-sum">₹ {{ row.sum_assured }}</span>
+                                </td>
+                                <td>
+                                    <span class="pill pill-premium">
+                                        ₹ {{ "%.2f"|format(row.total_premium) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    ₹ {{ "%.2f"|format(row.monthly_premium) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+                <div class="empty-state">
+                    No member selected yet.  
+                    <br>Start typing an employee code (e.g. <b>Q1001</b>) or employee name in the left panel, then hit <b>Search</b>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

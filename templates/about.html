@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Amazon Clone</title>
+    <!-- Flask me CSS link is way -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <div class="navbar">
+        <div class="nav-logo">
+            My<span>Shop</span>
+        </div>
+
+        <div class="nav-search">
+            <input type="text" placeholder="Search for products, brands and more...">
+            <button>Search</button>
+        </div>
+
+        <div class="nav-links">
+            <div>Hello, sign in</div>
+            <div>Returns & Orders</div>
+            <div>Cart</div>
+        </div>
+    </div>
+
+    <!-- Secondary Navbar -->
+    <div class="subnav">
+        <span>All</span>
+        <span>Mobiles</span>
+        <span>Electronics</span>
+        <span>Fashion</span>
+        <span>Home</span>
+        <span>Appliances</span>
+        <span>Books</span>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h2>Welcome to MyShop</h2>
+        <p style="margin-top: 10px;">Amazon-style homepage built with Python Flask (learning project).</p>
+        <p style="margin-top: 5px;">Add your own products, categories and backend later.</p>
+    </div>
+
+    <!-- Products Section -->
+    <div class="products-section">
+        <h2>Top Deals for You</h2>
+
+        <div class="products-grid">
+            {% for p in products %}
+            <div class="product-card">
+                <div class="product-image-placeholder">
+                    Product Image
+                </div>
+                <div class="product-name">{{ p.name }}</div>
+                <div class="product-tagline">{{ p.tagline }}</div>
+                <div class="product-price">{{ p.price }}</div>
+                <button class="product-btn">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        &copy; {{ 2025 }} MyShop - Amazon style clone for practice only.
+    </div>
+
+</body>
+</html>

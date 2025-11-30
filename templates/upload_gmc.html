@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Upload GMC Master</title>
+</head>
+<body>
+    <h1>Upload GMC Master (CSV)</h1>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="color: green;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('upload_gmc') }}" method="post" enctype="multipart/form-data">
+        <p>
+            <label>Select CSV file:</label>
+            <input type="file" name="file" accept=".csv" required>
+        </p>
+        <button type="submit">Upload</button>
+    </form>
+
+    <p>
+        <a href="{{ url_for('home') }}">Back to Home</a>
+    </p>
+
+    <p><b>Note:</b> Excel file ko pehle <i>Save As → CSV</i> karke yahan upload karein.</p>
+</body>
+</html>
+

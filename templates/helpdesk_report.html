@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Helpdesk Ticket Report</title>
+
+<!-- Bootstrap + Google Font -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#0b1220;
+    --soft:#f8fafc;
+    --accent1: #0ea5e9; /* cyan */
+    --accent2: #7c3aed; /* purple */
+    --accent3: #f97316; /* orange */
+    --muted: #93a0b6;
+  }
+  body{
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(180deg,#f3f6fb 0%, #eef2f7 100%);
+    padding:24px;
+    color:#0b1220;
+  }
+  .topbar{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+  .brand{font-weight:700;color:var(--accent2); font-size:1.15rem}
+  .card-root{background:#ffffff;border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(15,23,42,0.08);margin-bottom:18px}
+  .controls .btn{min-width:150px}
+  .summary{font-weight:600;margin-bottom:10px;color:#0b1220}
+  table.dataTable thead th{background:transparent;border-bottom:1px solid #e6eefb;font-weight:700}
+  .status-bold{font-weight:700}
+  .totals-row{background:#eef6ff;font-weight:700}
+  .grand-row{background:#ddeeff;font-weight:800}
+  .table td, .table th{vertical-align:middle;padding:10px 12px}
+  .table .empty-cell{color:transparent} /* visually blank like Excel */
+  .chart-card{height:340px;padding:14px}
+  .legend-pill{display:inline-block;padding:6px 10px;border-radius:999px;margin-right:8px;font-size:0.85rem}
+  .legend-0{background:rgba(14,165,233,0.12);color:var(--accent1)}
+  .legend-2{background:rgba(124,58,237,0.12);color:var(--accent2)}
+  .legend-2p{background:rgba(249,115,22,0.12);color:var(--accent3)}
+  /* remove DataTables sorting arrows (we disable ordering anyway) */
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after { display: none; }
+  /* responsive adjustments */
+  @media (max-width: 900px){
+    .topbar{flex-direction:column;align-items:stretch}
+  }
+  .filter-label{
+    font-size:0.76rem;
+    font-weight:600;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing: .04em;
+  }
+</style>
+</head>
+<body>
+<div class="container-lg">
+
+  <div class="topbar">
+    <div class="brand">Ticket Report Viewer</div>
+
+    <form id="uploadForm" class="d-flex controls" action="/helpdesk_upload" method="post" enctype="multipart/form-data">
+      <input class="form-control form-control-sm" name="file" type="file" accept=".csv,.xlsx" required>
+      <button class="btn btn-primary btn-sm ms-2" type="submit">Upload & Process</button>
+    </form>
+
+    <button id="downloadPivot" class="btn btn-outline-secondary btn-sm" style="display:none">
+      Download Report (Excel)
+    </button>
+
+    <button id="markSent" class="btn btn-outline-success btn-sm ms-2" style="display:none">
+      Mark as Sent
+    </button>
+
+    <button id="sendEmail" class="btn btn-outline-primary btn-sm ms-2" style="display:none">
+      Send Email
+    </button>
+  </div>
+
+  <div class="card-root">
+
+    <!-- Last report info -->
+    <div class="mb-2 small text-muted">
+      {% if last_start and last_end %}
+        <div><strong>Last sent range:</strong> {{ last_start }} to {{ last_end }}</div>
+        {% if suggested_start %}
+          <div><strong>Suggested next start:</strong> {{ suggested_start }} onwards</div>
+        {% endif %}
+      {% else %}
+        <div><em>No report history found yet.</em></div>
+      {% endif %}
+    </div>
+
+    <!-- Date range filter -->
+    <div class="d-flex flex-wrap align-items-end gap-2 mb-3">
+      <div>
+        <div class="filter-label">Created from</div>
+        <input type="date" id="startDate" class="form-control form-control-sm">
+      </div>
+      <div>
+        <div class="filter-label">Created to</div>
+        <input type="date" id="endDate" class="form-control form-control-sm">
+      </div>
+      <div class="ms-auto d-flex gap-2">
+        <button id="applyFilter" class="btn btn-sm btn-success">
+          Apply Filter
+        </button>
+        <button id="clearFilter" class="btn btn-sm btn-outline-secondary">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="summary">
+      Total tickets: <span id="totalVal">-</span>
+      &nbsp;&nbsp; Closed: <span id="closedVal">-</span>
+      &nbsp;&nbsp; In progress: <span id="inprogressVal">-</span>
+      &nbsp;&nbsp; Open: <span id="openVal">-</span>
+    </div>
+
+    <div class="table-responsive">
+      <table id="pivotTable" class="table table-borderless" style="width:100%; white-space:nowrap;">
+        <!-- filled by JS -->
+      </table>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="row g-3">
+    <div class="col-lg-7">
+      <div class="card-root chart-card">
+        <h6 class="mb-2">Department-wise Age Distribution</h6>
+        <canvas id="stackedBar"></canvas>
+        <div class="mt-3">
+          <span class="legend-pill legend-0">0</span>
+          <span class="legend-pill legend-2">2</span>
+          <span class="legend-pill legend-2p">2+</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card-root chart-card">
+        <h6 class="mb-2">Status × Group_Days</h6>
+        <canvas id="heatmap"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart row 2: Open tickets by department -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-12">
+      <div class="card-root chart-card">
+        <h6 class="mb-2">Open Tickets by Department</h6>
+        <canvas id="openDeptChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Suggested start date from backend (Jinja)
+const suggestedStart = "{{ suggested_start or '' }}";
+document.addEventListener('DOMContentLoaded', function(){
+  if (suggestedStart) {
+    const sd = document.getElementById('startDate');
+    if (sd && !sd.value) {
+      sd.value = suggestedStart;
+    }
+  }
+});
+
+// Upload
+$('#uploadForm').on('submit', function(e){
+  e.preventDefault();
+  var formData = new FormData(this);
+  fetch('/helpdesk_upload', {method:'POST', body: formData})
+    .then(r=>r.json())
+    .then(renderReport)
+    .catch(err=>{
+      alert('Upload failed');
+      console.error(err);
+    });
+});
+
+// Date filter buttons
+document.getElementById('applyFilter').addEventListener('click', function(){
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  fetch('/helpdesk_filter', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({start_date: start, end_date: end})
+  })
+  .then(r=>r.json())
+  .then(renderReport)
+  .catch(err=>{
+    alert('Filter failed');
+    console.error(err);
+  });
+});
+
+document.getElementById('clearFilter').addEventListener('click', function(){
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  fetch('/helpdesk_filter', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({start_date: '', end_date: ''})
+  })
+  .then(r=>r.json())
+  .then(renderReport)
+  .catch(err=>{
+    alert('Filter failed');
+    console.error(err);
+  });
+});
+
+function renderReport(data){
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  // show buttons & attach handlers
+  $('#downloadPivot').show().off('click').on('click', function(){
+    window.location='/helpdesk_download';
+  });
+
+  $('#markSent').show().off('click').on('click', function(){
+    fetch('/helpdesk_mark_sent', {method:'POST'})
+      .then(r => r.json())
+      .then(res => {
+        if(res.error){ alert(res.error); }
+        else{ alert(res.message || 'Marked as sent.'); }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Failed to mark as sent.');
+      });
+  });
+
+  $('#sendEmail').show().off('click').on('click', function(){
+    fetch('/helpdesk_send_email', {method:'POST'})
+      .then(r => r.json())
+      .then(res => {
+        if(res.error){ alert(res.error); }
+        else{ alert(res.message || 'Email sent.'); }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Failed to send email.');
+      });
+  });
+
+  // summary
+  $('#totalVal').text(data.summary.total);
+  $('#closedVal').text(data.summary.closed);
+  $('#inprogressVal').text(data.summary.inprogress);
+  $('#openVal').text(data.summary.open);
+
+  // Desired business status order
+  const priority = ["Closed", "In progress", "Open"];
+  let statusOrder = data.status_order.slice();
+  let ordered = [];
+  for(const p of priority){
+    if(statusOrder.includes(p)) ordered.push(p);
+  }
+  for(const s of statusOrder){
+    if(!ordered.includes(s)) ordered.push(s);
+  }
+  statusOrder = ordered;
+
+  const rowsLookup = {};
+  for(const r of data.rows){
+    if(!rowsLookup[r.status]) rowsLookup[r.status] = [];
+    rowsLookup[r.status].push({ department: r.department, counts: r.counts, grand_total: r.grand_total});
+  }
+
+  const cols = data.columns; // ['0','2','2+']
+
+  // Build table header
+  let html = '<thead><tr><th style="width:220px">Status</th><th style="width:260px">Department</th>';
+  for(let c of cols){ html += `<th style="text-align:right">${c}</th>` }
+  html += '<th style="text-align:right">Grand Total</th></tr></thead><tbody>';
+
+  // Construct rows per status
+  for(const s of statusOrder){
+    const depts = rowsLookup[s] || [];
+    let firstRow = true;
+    for(const drow of depts){
+      html += '<tr>';
+      if(firstRow){
+        html += `<td class="status-bold">${s}</td>`;
+        firstRow = false;
+      } else {
+        html += `<td class="empty-cell">-</td>`;
+      }
+      html += `<td>${drow.department}</td>`;
+      for(const c of cols){
+        const v = drow.counts[c];
+        html += `<td style="text-align:right">${(v===0 || v===undefined) ? (v?v:'') : v}</td>`;
+      }
+      html += `<td style="text-align:right">${drow.grand_total || ''}</td>`;
+      html += '</tr>';
+    }
+
+    // Status total row from status_matrix
+    const sTotals = data.status_matrix[s] || {'0':0,'2':0,'2+':0};
+    const sGrand = (sTotals['0']||0) + (sTotals['2']||0) + (sTotals['2+']||0);
+    html += `<tr class="totals-row"><td style="font-weight:700">${s} Total</td><td></td>`;
+    for(const c of cols){ html += `<td style="text-align:right;font-weight:700">${sTotals[c]||''}</td>` }
+    html += `<td style="text-align:right;font-weight:700">${sGrand||''}</td></tr>`;
+  }
+
+  // Grand total
+  html += `<tr class="grand-row"><td style="font-weight:800">Grand Total</td><td></td>`;
+  for(const c of cols){ html += `<td style="text-align:right;font-weight:800">${data.grand_totals[c]||''}</td>` }
+  html += `<td style="text-align:right;font-weight:800">${data.grand_total||''}</td></tr>`;
+
+  html += '</tbody>';
+  $('#pivotTable').html(html);
+
+  if($.fn.DataTable.isDataTable('#pivotTable')){
+    $('#pivotTable').DataTable().destroy();
+  }
+  $('#pivotTable').DataTable({
+    paging:false, searching:false, info:false, ordering:false, autoWidth:false
+  });
+
+  // ---------------- Charts ----------------
+
+  // Stacked bar: department-wise
+  const deptLabels = data.dept_order;
+  const palette = ['rgba(14,165,233,0.9)','rgba(124,58,237,0.9)','rgba(249,115,22,0.95)'];
+
+  const datasets = cols.map((col, idx)=>({
+    label: col,
+    data: deptLabels.map(d => data.dept_matrix[d]?.[col] || 0),
+    backgroundColor: palette[idx],
+    stack: 'Stack 0'
+  }));
+
+  var ctx = document.getElementById('stackedBar').getContext('2d');
+  if(window.sb) window.sb.destroy();
+  window.sb = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: deptLabels, datasets: datasets },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{position:'top'},
+        tooltip:{
+          callbacks:{
+            label: function(context){
+              const val = context.raw || 0;
+              return `${context.dataset.label}: ${val}`;
+            }
+          }
+        }
+      },
+      scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } }
+    }
+  });
+
+  // Heatmap-like grouped horizontal bars: status x group_days
+  const heatLabels = statusOrder;
+  const heatDatasets = cols.map((col, idx)=>({
+    label: col,
+    data: heatLabels.map(s => data.status_matrix[s]?.[col] || 0),
+    backgroundColor: palette[idx]
+  }));
+
+  var ctx2 = document.getElementById('heatmap').getContext('2d');
+  if(window.hm) window.hm.destroy();
+  window.hm = new Chart(ctx2, {
+    type:'bar',
+    data:{ labels: heatLabels, datasets: heatDatasets },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{
+        legend:{ position:'right' },
+        tooltip:{ callbacks:{ label: function(ctx){ return `${ctx.dataset.label}: ${ctx.raw}` } }
+        }
+      },
+      scales:{ x:{ beginAtZero:true } }
+    }
+  });
+
+  // Open tickets by department
+  const openDept = data.open_by_dept || [];
+  const openDeptLabels = openDept.map(o => o.department);
+  const openDeptCounts = openDept.map(o => o.count);
+
+  var ctx3 = document.getElementById('openDeptChart').getContext('2d');
+  if(window.odc) window.odc.destroy();
+  window.odc = new Chart(ctx3, {
+    type:'bar',
+    data:{
+      labels: openDeptLabels,
+      datasets:[{
+        label:'Open tickets',
+        data: openDeptCounts,
+        backgroundColor:'rgba(14,165,233,0.9)'
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label: function(ctx){ return `Open: ${ctx.raw}`; } } }
+      },
+      scales:{
+        x:{ ticks:{ autoSkip:false }},
+        y:{ beginAtZero:true }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

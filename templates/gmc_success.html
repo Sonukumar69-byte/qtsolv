@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>GMC Form Submitted</title>
+</head>
+<body>
+    <h2 style="text-align:center;">Thank You {{ name }}! 🎉</h2>
+    <p style="text-align:center;">Your GMC form has been submitted successfully.</p>
+
+    <div style="text-align:center; margin-top:20px;">
+        <a href="{{ url_for('gmc_form') }}">Submit another response</a> |
+        <a href="{{ url_for('home') }}">Back to Home</a>
+    </div>
+</body>
+</html>

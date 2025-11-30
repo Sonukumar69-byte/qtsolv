@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GMC Details Form</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Poppins", Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7ff, #e0f2ff);
+            color: #111827;
+        }
+
+        /* ======= TOP HEADER WITH SLIDER ======= */
+        .gmc-header {
+            width: 100%;
+            background: linear-gradient(120deg, #0f172a, #1d4ed8, #0ea5e9);
+            color: white;
+            padding: 24px 40px 28px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.35);
+        }
+
+        .gmc-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .gmc-title-block {
+            flex: 1 1 260px;
+        }
+
+        .gmc-title-block h1 {
+            font-size: 32px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .gmc-title-block p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        /* Simple text slider */
+        .gmc-slider {
+            flex: 1 1 260px;
+            overflow: hidden;
+            position: relative;
+            height: 70px;
+        }
+
+        .gmc-slider-track {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: slideText 12s infinite;
+        }
+
+        .gmc-slide {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .gmc-slide span.badge {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .gmc-slide:nth-child(1) { top: 0; }
+        .gmc-slide:nth-child(2) { top: 70px; }
+        .gmc-slide:nth-child(3) { top: 140px; }
+
+        @keyframes slideText {
+            0%   { transform: translateY(0); }
+            30%  { transform: translateY(0); }
+            35%  { transform: translateY(-70px); }
+            65%  { transform: translateY(-70px); }
+            70%  { transform: translateY(-140px); }
+            95%  { transform: translateY(-140px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* ======= MAIN CONTAINER ======= */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 24px 26px 30px;
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+        }
+
+        fieldset {
+            border: none;
+            margin-bottom: 22px;
+            padding: 18px 18px 14px;
+            border-radius: 14px;
+            background: #f9fafb;
+            border-left: 4px solid #2563eb;
+        }
+
+        fieldset.dependent {
+            border-left-color: #06b6d4;
+        }
+
+        legend {
+            font-weight: 600;
+            font-size: 15px;
+            padding: 0 4px 6px;
+            color: #111827;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px 18px;
+            margin-top: 8px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #4b5563;
+        }
+
+        input, select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.18s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        select {
+            background-color: #ffffff;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .dependent-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        /* Submit button */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .btn-primary {
+            padding: 10px 26px;
+            border-radius: 999px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(120deg, #2563eb, #0ea5e9);
+            color: white;
+            box-shadow: 0 10px 18px rgba(37, 99, 235, 0.45);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(37, 99, 235, 0.55);
+            opacity: 0.97;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 14px rgba(37, 99, 235, 0.45);
+        }
+
+        @media (max-width: 640px) {
+            .gmc-header {
+                padding: 18px 16px 22px;
+            }
+            .form-card {
+                padding: 18px 14px 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER WITH SLIDER ===== -->
+    <header class="gmc-header">
+        <div class="gmc-header-inner">
+            <div class="gmc-title-block">
+                <h1>GMC Details Form</h1>
+                <p>Provide accurate details as per Aadhar for smooth insurance processing.</p>
+            </div>
+
+            <div class="gmc-slider">
+                <div class="gmc-slider-track">
+                    <div class="gmc-slide">
+                        <span class="badge">Tip</span>
+                        <span>Ensure names match exactly with Aadhar to avoid policy rejections.</span>
+                    </div>
+                    <div class="gmc-slide">
+                        <span class="badge">Security</span>
+                        <span>Your details are used only for employee group medical coverage.</span>
+                    </div>
+                    <div class="gmc-slide">
+                        <span class="badge">Reminder</span>
+                        <span>Add all dependents you want to cover in the GMC policy.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN FORM ===== -->
+    <main class="page-wrapper">
+        <div class="form-card">
+            <form method="POST">
+                <!-- Basic Details -->
+                <fieldset>
+                    <legend>Basic Details</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="last_modified_time">Last modified time</label>
+                            <input type="datetime-local" id="last_modified_time" name="last_modified_time">
+                            <span class="hint">Optional – system time can also be used.</span>
+                        </div>
+
+                        <div class="field">
+                            <label for="employee_code">Employee Code</label>
+                            <input type="text" id="employee_code" name="employee_code" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Employee Details -->
+                <fieldset>
+                    <legend>Employee Details (As per Aadhar)</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="employee_name_aadhar">Employee Name (as per Aadhar card)</label>
+                            <input type="text" id="employee_name_aadhar" name="employee_name_aadhar" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="employee_gender">Employee Gender</label>
+                            <select id="employee_gender" name="employee_gender" required>
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="employee_dob_aadhar">Employee Date of Birth (as per Aadhar card)</label>
+                            <input type="date" id="employee_dob_aadhar" name="employee_dob_aadhar" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Dependent 1 -->
+                <fieldset class="dependent">
+                    <legend>Dependent - 1</legend>
+                    <div class="dependent-title">Primary Dependent</div>
+                    <div class="row">
+                        <div class="field">
+                            <label for="dep1_name">Dependent -1 Name (as per Aadhar card)</label>
+                            <input type="text" id="dep1_name" name="dep1_name">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep1_relation">Dependent-1 : Relationship with Employee</label>
+                            <input type="text" id="dep1_relation" name="dep1_relation" placeholder="Spouse / Son / Daughter / Father / Mother">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep1_gender">Dependent -1 : Gender</label>
+                            <select id="dep1_gender" name="dep1_gender">
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="dep1_dob">Dependent -1 : Date of Birth (as per Aadhar card)</label>
+                            <input type="date" id="dep1_dob" name="dep1_dob">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Dependent 2 -->
+                <fieldset class="dependent">
+                    <legend>Dependent - 2</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="dep2_name">Dependent -2 Name (as per Aadhar card)</label>
+                            <input type="text" id="dep2_name" name="dep2_name">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep2_relation">Dependent-2 : Relationship with Employee</label>
+                            <input type="text" id="dep2_relation" name="dep2_relation">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep2_gender">Dependent -2 : Gender</label>
+                            <select id="dep2_gender" name="dep2_gender">
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="dep2_dob">Dependent -2 : Date of Birth (as per Aadhar card)</label>
+                            <input type="date" id="dep2_dob" name="dep2_dob">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Dependent 3 -->
+                <fieldset class="dependent">
+                    <legend>Dependent - 3</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="dep3_name">Dependent -3 Name (as per Aadhar card)</label>
+                            <input type="text" id="dep3_name" name="dep3_name">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep3_relation">Dependent-3 : Relationship with Employee</label>
+                            <input type="text" id="dep3_relation" name="dep3_relation">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep3_gender">Dependent -3 : Gender</label>
+                            <select id="dep3_gender" name="dep3_gender">
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="dep3_dob">Dependent -3 : Date of Birth (as per Aadhar card)</label>
+                            <input type="date" id="dep3_dob" name="dep3_dob">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Dependent 4 -->
+                <fieldset class="dependent">
+                    <legend>Dependent - 4</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="dep4_name">Dependent -4: Name (As per Aadhar Card)</label>
+                            <input type="text" id="dep4_name" name="dep4_name">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep4_relation">Dependent -4: Relation with Employee (As per Aadhar Card)</label>
+                            <input type="text" id="dep4_relation" name="dep4_relation">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep4_gender">Dependent -4: Gender</label>
+                            <select id="dep4_gender" name="dep4_gender">
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="dep4_dob">Dependent -4: Date of Birth (As per Aadhar Card)</label>
+                            <input type="date" id="dep4_dob" name="dep4_dob">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Dependent 5 -->
+                <fieldset class="dependent">
+                    <legend>Dependent - 5</legend>
+                    <div class="row">
+                        <div class="field">
+                            <label for="dep5_name">Dependent -5: Name (As per Aadhar Card)</label>
+                            <input type="text" id="dep5_name" name="dep5_name">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep5_relation">Dependent -5: Relationship with Employee</label>
+                            <input type="text" id="dep5_relation" name="dep5_relation">
+                        </div>
+
+                        <div class="field">
+                            <label for="dep5_gender">Dependent -5: Gender</label>
+                            <select id="dep5_gender" name="dep5_gender">
+                                <option value="">--Select--</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="dep5_dob">Dependent -5: Date of Birth (As per Aadhar Card)</label>
+                            <input type="date" id="dep5_dob" name="dep5_dob">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Submit GMC Form</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
